@@ -34,21 +34,85 @@ Se a pessoa que pegar seu caso amanhã não souber **exatamente o que clicar**, 
 
 ## Heurística FEW HICCUPPS (Bolton) — pra inspirar casos
 
-Pergunte pra cada feature: **a que padrões essa feature deveria obedecer?**
+### O que é
+
+Criada por **Michael Bolton** (Developsense), FEW HICCUPPS é uma **mnemônica** de 11 categorias de "oráculos" — referências contra as quais comparar o comportamento do app pra detectar bugs. Pergunta-chave:
+
+> **"Esta feature está consistente com X?"**
+
+Cada letra é um X diferente. Quando algo diverge da expectativa, vira **suspeita de bug** = ideia pra caso de teste.
+
+**Fonte oficial:** <https://developsense.com/blog/2012/10/few-hiccupps>
+
+### Tabela de aplicação
+
+Pergunte pra cada feature: **"a que padrões essa feature deveria obedecer?"**
 
 | Letra | Pergunta | Exemplo de teste |
 |---|---|---|
-| **F**amiliarity | Como apps similares fazem? | "Bluesky deveria comportar como Twitter no logout?" |
-| **E**xplainability | Mensagens de erro são claras? | "Senha fraca → texto explica por quê?" |
-| **W**orld | Comporta certo no mundo real? | "Modo avião + tap em login = erro claro" |
-| **H**istory | Versões anteriores comportavam assim? | "Update v1.34 quebrou backup automático?" |
-| **I**mage | App tem reputação a manter (privacy/etc.)? | "DuckDuckGo: zero tracking confirmado?" |
-| **C**omparable products | Como concorrentes fazem? | "Saber vs Notability — export PDF tem mesma qualidade?" |
-| **C**laims | O que app promete na loja? | "App diz 'sync rápido' — 30s sync de 100 fotos passa?" |
-| **U**ser expectations | O que aluno (usuário típico) espera? | "Salvar sem internet — espera-se persistir local?" |
-| **P**roduct | Coerência interna do produto | "Tema escuro afeta todas as telas?" |
-| **P**urpose | Cumpre propósito declarado? | "App de notas perde dados ao fechar = falha de propósito" |
-| **S**tandards | Padrões iOS HIG / Material Design? | "Bottom nav segue Material spec?" |
+| **F**amiliarity | É consistente com bugs/comportamentos **passados** já conhecidos? | "Bug clássico de cache stale ao trocar usuário — testou nesse app?" |
+| **E**xplainability | Comportamento se **explica facilmente** pra outro humano? | "Senha fraca → mensagem explica POR QUÊ é fraca?" |
+| **W**orld | Comporta certo no **mundo real** (não só no laboratório)? | "Modo avião + tap em login = erro claro?" |
+| **H**istory | Bate com **versões anteriores** do app/feature? | "Backup automático funcionava na v1.33 — v1.34 ainda funciona?" |
+| **I**mage | Mantém **reputação/imagem** que app vende? | "DuckDuckGo promete privacy — alguma feature vaza dado?" |
+| **C**omparable products | Comporta como **concorrentes** consagrados? | "Saber export PDF vs Notability — qualidade visual mesma?" |
+| **C**laims | Cumpre o que app **promete** (loja, marketing, docs)? | "Loja diz 'backup em background' — funciona com app fechado mesmo?" |
+| **U**ser expectations | Bate com o que **usuário típico espera**? | "Salvar nota sem internet — espera-se persistir local automaticamente" |
+| **P**roduct | É **coerente internamente** (com outras partes do mesmo app)? | "Tema escuro nas Configs afeta todas as telas inclusive modal?" |
+| **P**urpose | Cumpre **propósito declarado** da feature/app? | "App de notas que perde dados ao fechar = falha de propósito" |
+| **S**tandards | Segue **padrões da plataforma** (iOS HIG / Material Design / WCAG)? | "Bottom nav segue Material 3? Tap target ≥48dp?" |
+
+### Como aplicar nos casos edge (passo a passo)
+
+1. **Escolha 1-2 casos edge** que você redigiu (CT-04, CT-05, etc.)
+2. Pra cada um, pergunta: **"qual letra de FEW HICCUPPS sustenta esse caso?"**
+3. Anota a letra + 1 frase justificando
+
+### Exemplos concretos — casos edge + heurística aplicada
+
+#### Exemplo A — Caso edge "Sem conexão"
+
+> **CT-04 (Edge):** Modo avião + tentar criar post no Bluesky → app mostra erro claro, dados preservados.
+
+| Heurística | Como aplica | Justificativa |
+|---|---|---|
+| **W** (World) | Mundo real tem conectividade intermitente (metrô, voo, área rural). | App tem que funcionar fora do laboratório com WiFi perfeito. |
+| **U** (User expectations) | Usuário espera que o que digitou **não se perca**. | Forms que zeram dados ao falhar = anti-padrão histórico. |
+| **C** (Claims) | App promete "post sempre que quiser". | Falha silenciosa quebra promessa. |
+
+#### Exemplo B — Caso edge "Permissão negada"
+
+> **CT-05 (Edge):** Negar permissão de câmera ao abrir feature de upload → app não crasha + explica como reabilitar.
+
+| Heurística | Como aplica | Justificativa |
+|---|---|---|
+| **S** (Standards) | iOS HIG + Android Material exigem fluxo gracioso de permissão. | Padrão da plataforma. |
+| **E** (Explainability) | Mensagem precisa **explicar por quê precisa** dessa permissão + caminho pra reabilitar. | Mensagem técnica/genérica = bug de UX. |
+| **P** (Purpose) | Feature de upload **depende** de câmera ou galeria. Negar = bloqueia propósito. | Sem fallback = falha de propósito. |
+
+#### Exemplo C — Caso edge "App em background"
+
+> **CT-06 (Edge):** Iniciar backup de fotos no Immich + mandar app pra background + voltar 5min depois → backup continua ou retoma sem perder progresso.
+
+| Heurística | Como aplica | Justificativa |
+|---|---|---|
+| **C** (Claims) | Loja diz "backup em background". | Promessa explícita do produto. |
+| **U** (User expectations) | Usuário não quer ficar com app aberto na tela por 30min. | Comportamento esperado de app de backup. |
+| **H** (History) | Versões anteriores faziam isso? Regressão? | Captura quebra de feature entre releases. |
+
+#### Exemplo D — Caso edge "Dados inválidos"
+
+> **CT-07 (Edge):** Digitar e-mail malformado (`abc@`, sem TLD) ao criar conta → erro inline imediato.
+
+| Heurística | Como aplica | Justificativa |
+|---|---|---|
+| **E** (Explainability) | Mensagem deve dizer **o que está errado** ("e-mail inválido — falta domínio"), não só "erro". | Erro genérico = UX ruim. |
+| **F** (Familiarity) | Form validation em tempo real é padrão **conhecido**. | Bug clássico: validar só no submit. |
+| **S** (Standards) | HTML5 / iOS / Material têm specs de validação inline. | Padrão da plataforma. |
+
+### Dica final
+
+Pra esta atividade (bonus), **escolha 1-2 casos edge** e aplica 1-2 letras em cada. Não precisa cobrir as 11 letras. **Qualidade > quantidade.**
 
 ## 5 padrões de bug pra incluir como caso edge
 

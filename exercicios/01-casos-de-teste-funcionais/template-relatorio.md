@@ -41,10 +41,14 @@
 
 ### Heurística FEW HICCUPPS aplicada (escolha 1-2 dos casos edge)
 
-| Caso | Heurística | Como aplica |
+> **O que é + exemplos:** ver [guia-redacao-casos.md — seção FEW HICCUPPS](https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/blob/main/exercicios/01-casos-de-teste-funcionais/guia-redacao-casos.md#heurística-few-hiccupps-bolton--pra-inspirar-casos)
+>
+> Resumo: 11 categorias de "oráculos" (Bolton) — pergunta "esta feature é consistente com X?" pra cada letra (F=Familiarity passado, E=Explainability, W=World, H=History, I=Image, C=Comparable products, C=Claims, U=User expectations, P=Product, P=Purpose, S=Standards).
+
+| Caso | Heurística (1-2 letras) | Como aplica (1 frase) |
 |---|---|---|
-| CT-04 | **H**istory (versões anteriores tinham essa feature) | [...] |
-| CT-05 | **C**laims (o que o app promete na loja) | [...] |
+| CT-04 | **W** (World) + **U** (User expectations) | [Modo avião é mundo real; usuário espera que dados não sumam] |
+| CT-05 | **S** (Standards) + **E** (Explainability) | [iOS HIG exige fluxo gracioso de permissão; mensagem deve explicar por quê] |
 
 ### Charter de teste exploratório (Bach SBTM)
 
