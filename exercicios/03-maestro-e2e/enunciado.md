@@ -3,26 +3,33 @@
 **Disciplina:** Testes de Aplicações Mobile
 **Entrega:** até **28/06/2026**
 **Modalidade:** individual
-**Tempo estimado:** ~2h (flows 01–03 feitos em aula; 04–05 em casa)
+**Tempo estimado:** ~2h (flows 01–02 feitos em aula; 03–05 em casa)
 
 ---
 
-## Contexto
+## Contexto — a pirâmide fecha no mesmo app
 
-Na Aula 4 você viu Maestro ao vivo. `01-launch.yaml` é o modelo resolvido. `02` e `03` você criou sozinho no Maestro Studio durante a aula. Esta entrega é finalizar os flows `04` e `05` e subir tudo via PR.
+Você já testou o app de filmes em dois níveis:
+
+- **Atividade 1 (unit):** funções puras, store de favoritos
+- **Atividade 2 (integração):** componentes + navegação + TanStack Query
+
+Agora, **Atividade 3 (E2E):** o **mesmo app**, testado de ponta a ponta com **Maestro** — abrindo o app de verdade no emulador/device e dirigindo a UI como um usuário.
+
+O app desta atividade — **CineFav** — é uma versão do app de filmes com **login**, **busca** e **favoritos**, e usa **dados mockados** (sem token TMDB, sem rede): os flows são **determinísticos**, sempre os mesmos filmes.
 
 ---
 
-## Pré-requisitos (setup antes da entrega)
+## Pré-requisitos (setup)
 
-👉 **Guia completo de setup:** [COMECE-AQUI.md](https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/blob/main/exercicios/03-maestro-e2e/COMECE-AQUI.md) — passo a passo por SO (macOS/Windows/Linux) + troubleshooting.
+👉 **Guia completo:** [COMECE-AQUI.md](https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/blob/main/exercicios/03-maestro-e2e/COMECE-AQUI.md) — passo a passo por SO + troubleshooting.
 
 **Resumo (3 passos):**
 
-1. **App** — baixar APK pronto e instalar (sem build):
+1. **App CineFav** — baixar APK pronto e instalar (sem build, sem token):
    ```bash
    # https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/releases
-   adb install TestesQAMobile.apk
+   adb install CineFav.apk
    ```
 2. **Maestro CLI** — `curl -Ls https://get.maestro.mobile.dev | bash` (Windows: `iwr get.maestro.mobile.dev/windows | iex`)
 3. **Verificar** — na raiz do repo:
@@ -31,75 +38,99 @@ Na Aula 4 você viu Maestro ao vivo. `01-launch.yaml` é o modelo resolvido. `02
    # powershell -ExecutionPolicy Bypass -File setup-maestro-check.ps1   # Windows
    ```
 
-Tudo verde ✅ → pronto pra entrega.
+Tudo verde ✅ → pronto.
 
 ---
 
-## O app-alvo: TestesQAMobile
+## O app-alvo: CineFav (`com.puciec.cinefav`)
+
+O app **abre na tela de Login** — todo flow precisa logar antes de chegar na lista.
+Login mock: **qualquer email com `@` + senha de 4+ caracteres** entra (ex.: `aluno@puc.br` / `1234`).
 
 | Tela | testIDs disponíveis |
 |---|---|
-| Home | `home-category-functional`, `home-category-performance` |
-| Formulário | `userform-name-input`, `userform-email-input`, `userform-submit-button` |
-| Calculadora | `calculator-digit-7`, `calculator-operator-plus`, `calculator-equals`, `calculator-display` |
-| Todo list | `todolist-add-button`, `todolist-item-${id}`, `todolist-item-delete-${id}` |
-| Onboarding | `onboarding-next-button`, `onboarding-skip-button`, `onboarding-finish-button` |
+| **Login** | `login-screen`, `login-email-input`, `login-password-input`, `login-submit-button`, `login-error-message` |
+| **Lista** | `movielist-screen`, `movielist-list`, `movielist-search-button`, `movielist-favorites-button` |
+| **Card do filme** | `movie-card-{id}`, `movie-card-title-{id}`, `movie-card-heart-{id}` |
+| **Detalhe** | `detail-screen`, `detail-title`, `detail-favorite-button`, `detail-back-button` |
+| **Busca** | `search-screen`, `search-input`, `search-clear-button`, `search-result-{id}`, `search-empty` |
+| **Favoritos** | `favorites-screen`, `favorites-count`, `favorites-item-{id}`, `favorites-item-{id}-remove`, `favorites-empty` |
+
+> `{id}` = id do filme. Ex.: **Matrix** = `603` → `movie-card-603`, `movie-card-heart-603`.
+> São os **mesmos testIDs** (`movie-card-{id}`, `movie-card-heart-{id}`, `favorites-count`) que você viu nos testes de integração da A2.
 
 Use `tapOn: id: "testID"` — mais estável que `tapOn: "texto"`.
+
+### Caminho de navegação
+
+```
+launchApp → Login → (logar) → Lista de filmes
+                                  ├─ 🔍 busca   (movielist-search-button)
+                                  ├─ ❤️ favoritos (movielist-favorites-button)
+                                  └─ tap no card → Detalhe
+```
+
+---
+
+## Os 5 flows
+
+| Flow | O que testa | Conceito Maestro |
+|---|---|---|
+| `flows/01-launch.yaml` | login + lista aparece (`assertVisible "Matrix"`) | **modelo resolvido** ✅ |
+| `flows/02-search.yaml` | buscar um filme | **env** (`SEARCH_TERM`) |
+| `flows/03-favorite.yaml` | favoritar na lista → conferir em Favoritos | asserção **cross-tela** |
+| `flows/04-detail.yaml` | abrir detalhe, favoritar lá, voltar | navegação entre telas |
+| `flows/05-js-dynamic.yaml` | termo de busca gerado por JS | **evalScript** (JS inline) |
+
+`01-launch.yaml` já vem **resolvido** no starter — use como modelo. Os outros têm comentários `# TODO` guiando.
 
 ---
 
 ## Critérios de avaliação
 
-| Flow | Tela | Pts |
-|---|---|---|
-| `flows/01-launch.yaml` | Home aparece com categorias | 2 |
-| `flows/02-userform.yaml` | Preencher formulário + submeter | 2 |
-| `flows/03-calculator.yaml` | `7 + 3 =` → verificar `10` na tela | 2 |
-| `flows/04-todolist.yaml` | Adicionar item + verificar que aparece | 2 |
-| `flows/05-onboarding.yaml` | Completar onboarding até tela final | 2 |
-| **Bônus** | `_fragments/` com fragmento + `runFlow:` em algum flow | +1 |
+| Item | Pts |
+|---|---|
+| `01-launch.yaml` (modelo — já resolvido) | 2 |
+| `02-search.yaml` completo | 2 |
+| `03-favorite.yaml` completo | 2 |
+| `04-detail.yaml` completo | 2 |
+| `05-js-dynamic.yaml` completo | 2 |
+| **Bônus** — extrair um fragmento em `flows/_fragments/` (ex.: login) e usar via `runFlow:` | +1 |
 
 **Total: 10 pts** (+ 1 bônus)
 
 Cada flow vale **2 pts**: 1pt por existir com `appId:` correto + 1pt por estar completo (sem `# TODO` + tem `assertVisible`).
 
-`01-launch.yaml` já vem resolvido no starter — use como modelo para os outros.
+> **Dica do bônus:** todo flow precisa logar. Em vez de repetir os passos de login, crie `flows/_fragments/login.yaml` (com `appId: com.puciec.cinefav` + `---` + os passos do login) e chame com `runFlow`:
+> ```yaml
+> - runFlow:
+>     when:
+>       visible:
+>         id: "login-screen"
+>     file: _fragments/login.yaml
+> ```
 
 ---
 
 ## Rodando local
 
-**Setup rápido com emulator automático:**
+**Emulator automático:**
 ```bash
 cd exercicios/03-maestro-e2e
-
-# Inicia emulator + roda todos os flows
-chmod +x ../../maestro-local.sh
-../../maestro-local.sh
-
-# Ou especificar AVD
-../../maestro-local.sh "Pixel_6_API_35" test flows/
+bash ../../maestro-local.sh           # macOS/Linux  (Windows: maestro-local.ps1)
 ```
 
-**Ou manual (se já tem emulator rodando):**
+**Manual (emulator já rodando):**
 ```bash
 cd exercicios/03-maestro-e2e/pratica
-
-# Um flow
-maestro test flows/04-todolist.yaml
-
-# Todos
-maestro test flows/
-
-# Visual editor (Maestro Studio — browser em localhost:9999)
-maestro studio
+maestro test flows/02-search.yaml     # um flow
+maestro test flows/                    # todos
+maestro studio                         # editor visual (localhost:9999)
 ```
 
 **Troubleshooting:**
-- Emulator lento? Rodar sem snapshot: `emulator -avd XXX -no-snapshot-load -no-audio`
 - Device não conecta? `adb kill-server && adb start-server`
-- Maestro hierarchy vazio? Restart emulator
+- Emulator lento? `emulator -avd XXX -no-snapshot-load -no-audio`
 
 ---
 
@@ -107,5 +138,5 @@ maestro studio
 
 PR no **seu fork** com os 5 flows em `exercicios/03-maestro-e2e/pratica/flows/`.
 
-O bot comenta a nota no PR a cada commit — você sabe a nota antes do prazo.
+O bot (J.A.R.V.I.S.) comenta a nota no PR a cada commit — você sabe a nota antes do prazo.
 Após aprovação do bot, cole o link do PR no Canvas (campo de entrega da Atividade 3).

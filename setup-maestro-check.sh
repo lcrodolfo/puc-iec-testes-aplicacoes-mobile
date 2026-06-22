@@ -29,21 +29,21 @@ DEVICE=$(adb devices | grep -E "emulator-|device" | awk '{print $1}' | head -1)
 echo "✅ Device online: $DEVICE"
 
 # 3. App installed
-if ! adb shell pm list packages | grep -q "com.apptestesmobile"; then
+if ! adb shell pm list packages | grep -q "com.puciec.cinefav"; then
   echo "⚠️ App not installed. Installing..."
-  if [ -f "app-debug.apk" ]; then
-    adb install app-debug.apk
+  if [ -f "CineFav.apk" ]; then
+    adb install CineFav.apk
     echo "✅ App installed"
   else
-    echo "❌ app-debug.apk not found in current directory"
+    echo "❌ CineFav.apk not found in current directory"
     echo "📥 Download from GitHub Releases:"
     echo "   https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/releases"
     echo ""
-    echo "Then run: adb install app-debug.apk"
+    echo "Then run: adb install CineFav.apk"
     exit 1
   fi
 fi
-echo "✅ App (com.apptestesmobile) installed"
+echo "✅ App (com.puciec.cinefav) installed"
 
 # 4. Maestro CLI
 if ! command -v maestro &> /dev/null; then

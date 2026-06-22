@@ -28,11 +28,11 @@ function checkFlow(raw: string): { complete: boolean; reason?: string } {
 const flowsDir = path.join(entregaPath, 'pratica', 'flows')
 
 const REQUIRED_FLOWS = [
-  { file: '01-launch.yaml',     label: 'Flow 1 — launch + home com categorias' },
-  { file: '02-userform.yaml',   label: 'Flow 2 — formulário de usuário' },
-  { file: '03-calculator.yaml', label: 'Flow 3 — calculadora 7+3=10' },
-  { file: '04-todolist.yaml',   label: 'Flow 4 — todo list' },
-  { file: '05-onboarding.yaml', label: 'Flow 5 — onboarding completo' },
+  { file: '01-launch.yaml',     label: 'Flow 1 — launch + login + lista de filmes' },
+  { file: '02-search.yaml',     label: 'Flow 2 — busca parametrizada (env)' },
+  { file: '03-favorite.yaml',   label: 'Flow 3 — favoritar (asserção cross-tela)' },
+  { file: '04-detail.yaml',     label: 'Flow 4 — detalhe do filme + favoritar' },
+  { file: '05-js-dynamic.yaml', label: 'Flow 5 — JavaScript embutido (evalScript)' },
 ]
 
 const criteria: Criterion[] = []
@@ -70,8 +70,11 @@ if (fs.existsSync(flowsDir)) {
   const flowFiles = fs.readdirSync(flowsDir).filter(f => f.endsWith('.yaml'))
   for (const f of flowFiles) {
     const raw = fs.readFileSync(path.join(flowsDir, f), 'utf8')
-    // Only count runFlow that explicitly references _fragments/ (not conditional runFlow blocks)
-    if (/runFlow:\s+['"_]?_fragments\//m.test(raw) || /runFlow:\s+\.?\/?_fragments\//m.test(raw)) {
+    // Conta runFlow que referencia _fragments/ — tanto o shorthand inline
+    // (runFlow: _fragments/x.yaml) quanto a forma em bloco (file: _fragments/x.yaml).
+    const refsFragmentInline = /runFlow:\s*['"]?\.?\/?_fragments\//m.test(raw)
+    const refsFragmentByFile = /\bfile:\s*['"]?\.?\/?_fragments\//m.test(raw)
+    if (refsFragmentInline || refsFragmentByFile) {
       hasRunFlowUsage = true; break
     }
   }

@@ -1,14 +1,48 @@
-# Maestro debug output (recordings, logs, screenshots de execução)
-.maestro/
-~/.maestro/tests/
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# Screenshots geradas pelos flows (takeScreenshot)
-*.png
-flows/**/*.png
+# dependencies
+node_modules/
 
-# APK baixado pra testar (não commitar binário)
-*.apk
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
 
-# OS
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
 .DS_Store
-Thumbs.db
+*.pem
+
+# local env files
+.env
+.env*.local
+
+# test artifacts
+coverage/
+results.json
+reports/
+.stryker-tmp/
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android

@@ -6,10 +6,8 @@
   "[yaml]": {
     "editor.defaultFormatter": "redhat.vscode-yaml",
     "editor.tabSize": 2,
-    "editor.insertSpaces": true,
-    "editor.autoIndent": "advanced"
+    "editor.insertSpaces": true
   },
-  "yaml.format.singleQuote": false,
   "yaml.validate": true,
   "files.exclude": {
     "**/.maestro": true

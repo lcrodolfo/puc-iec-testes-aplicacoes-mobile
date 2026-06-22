@@ -1,34 +1,43 @@
-# Exercício — Atividade 3: Suíte Maestro E2E
+# Atividade 3 — Suíte Maestro E2E · CineFav
 
-App-alvo: **TestesQAMobile** (`appId: com.apptestesmobile`), instalado no simulador iOS ou emulador Android.
+App **CineFav** (filmes) já implementado e funcionando. **Você não mexe no app** — sua entrega são os **flows Maestro** em `flows/`.
 
-## Setup
+É o **mesmo app** da A1 (unit) e A2 (integração), agora com **login, busca e favoritos** — a pirâmide de testes fecha no mesmo app, agora no nível **E2E**.
+
+> Dados **mockados** (sem token TMDB, sem rede) → os flows são determinísticos.
+
+---
+
+## Comece aqui
+
+👉 **Setup:** [`../COMECE-AQUI.md`](../COMECE-AQUI.md) — instalar adb, app e Maestro (por SO).
+📄 **Enunciado + rubrica:** [`../enunciado.md`](../enunciado.md)
 
 ```bash
-# Maestro CLI (uma vez)
-curl -Ls "https://get.maestro.mobile.dev" | bash
-maestro --version    # 1.38.x ou superior
+# com emulator/device + app instalado:
+maestro test flows/01-launch.yaml   # modelo resolvido — deve passar
+maestro test flows/                  # todos
+maestro studio                       # editor visual (localhost:9999)
 ```
 
-## Como rodar
+---
 
-```bash
-maestro test flows/01-launch.yaml   # flow individual
-maestro test flows/                 # todos
-```
+## Os flows (sua entrega)
 
-## O que fazer
-
-`flows/01-launch.yaml` já vem **resolvido** — use de modelo. Os outros 4 têm `# TODO` marcando o que falta:
-
-| Flow | Arquivo | testIDs úteis |
+| Arquivo | O que testa | Status |
 |---|---|---|
-| 1 — Launch (✅ modelo) | `flows/01-launch.yaml` | `home-category-functional` |
-| 2 — Formulário de usuário | `flows/02-userform.yaml` | `userform-name-input`, `userform-email-input`, `userform-submit-button` |
-| 3 — Calculadora `7 + 3 = 10` | `flows/03-calculator.yaml` | `calculator-digit-7`, `calculator-operator-plus`, `calculator-digit-3`, `calculator-equals`, `calculator-display` |
-| 4 — Todo list | `flows/04-todolist.yaml` | `todolist-add-button`, `todolist-item-${id}` |
-| 5 — Onboarding | `flows/05-onboarding.yaml` | `onboarding-next-button`, `onboarding-finish-button` |
+| `flows/01-launch.yaml` | login + lista de filmes | ✅ modelo resolvido |
+| `flows/02-search.yaml` | busca (usa `env:`) | 🧑‍💻 você completa |
+| `flows/03-favorite.yaml` | favoritar → Favoritos | 🧑‍💻 você completa |
+| `flows/04-detail.yaml` | detalhe + favoritar | 🧑‍💻 você completa |
+| `flows/05-js-dynamic.yaml` | busca via JS (`runScript`) | 🧑‍💻 você completa |
 
-**Bônus:** extraia um fragmento reutilizável em `flows/_fragments/` e chame com `runFlow:`.
+Cada flow tem comentários `# TODO` guiando. **Bônus:** extraia `flows/_fragments/login.yaml` e chame com `runFlow:`.
 
-> Regra: use `tapOn: { id: ... }` (não `tapOn: "texto"`) nos elementos que têm testID, e pelo menos 1 `assertVisible` por flow.
+Os testIDs do app estão no `enunciado.md` (tabela completa) e em `src/utils/testIDs.ts`.
+
+---
+
+## Entrega
+
+PR no seu fork com os 5 flows completos. O bot (J.A.R.V.I.S.) comenta a nota a cada commit.

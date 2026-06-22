@@ -30,16 +30,14 @@ Você precisa de **um** dos dois:
 
 Confira: `adb devices` → deve listar seu device/emulator.
 
-## 2. App TestesQAMobile
+## 2. App CineFav
+
+App próprio da disciplina — **não está em nenhuma loja**, **não precisa de token** (dados mockados). Baixe o APK pré-compilado:
 
 ```bash
-# Baixar APK pré-compilado (sem build!)
 # https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/releases
-
-adb install app-debug.apk
+adb install CineFav.apk
 ```
-
-Alternativa: Play Store / App Store → buscar **"Testes QA Mobile"**.
 
 ## 3. Maestro CLI
 
@@ -93,7 +91,8 @@ powershell -ExecutionPolicy Bypass -File maestro-local.ps1
 | Maestro instalou mas comando não acha | Reabra o terminal (PATH). macOS/Linux: `export PATH="$PATH:$HOME/.maestro/bin"` |
 | `maestro hierarchy` vazio ou trava | `adb kill-server && adb start-server`, reinicie o emulator |
 | Emulator muito lento | AVD com menos RAM, `-no-snapshot-load -no-audio`, ou use celular físico |
-| App não instala (`INSTALL_FAILED`) | Device é x86_64 ou arm64? O APK cobre os dois. Desinstale versão antiga: `adb uninstall com.apptestesmobile` |
+| App não instala (`INSTALL_FAILED`) | Desinstale versão antiga: `adb uninstall com.puciec.cinefav` |
+| App abre em branco / pede login | Normal — faça login: email com `@` + senha 4+ chars (ex: `aluno@puc.br` / `1234`) |
 | Sem celular nem emulator roda | Fale com o professor — alternativa Maestro Cloud (free tier) |
 
 Dúvida? **Teams da turma** ou jackson.96@gmail.com.

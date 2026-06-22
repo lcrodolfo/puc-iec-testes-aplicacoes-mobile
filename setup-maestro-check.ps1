@@ -26,21 +26,21 @@ if (-not $devices) {
 Write-Host "[OK] Device online" -ForegroundColor Green
 
 # 3. App instalado
-$app = adb shell pm list packages | Select-String "com.apptestesmobile"
+$app = adb shell pm list packages | Select-String "com.puciec.cinefav"
 if (-not $app) {
   Write-Host "[!] App nao instalado. Tentando instalar..." -ForegroundColor Yellow
-  if (Test-Path "app-debug.apk") {
-    adb install app-debug.apk
+  if (Test-Path "CineFav.apk") {
+    adb install CineFav.apk
     Write-Host "[OK] App instalado" -ForegroundColor Green
   } else {
-    Write-Host "[X] app-debug.apk nao encontrado no diretorio atual" -ForegroundColor Red
+    Write-Host "[X] CineFav.apk nao encontrado no diretorio atual" -ForegroundColor Red
     Write-Host "    Baixe do GitHub Releases:"
     Write-Host "    https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/releases"
-    Write-Host "    Depois: adb install app-debug.apk"
+    Write-Host "    Depois: adb install CineFav.apk"
     exit 1
   }
 } else {
-  Write-Host "[OK] App (com.apptestesmobile) instalado" -ForegroundColor Green
+  Write-Host "[OK] App (com.puciec.cinefav) instalado" -ForegroundColor Green
 }
 
 # 4. Maestro CLI
