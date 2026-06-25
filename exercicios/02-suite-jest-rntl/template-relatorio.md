@@ -5,7 +5,7 @@
 * **Aluno:** Rodolfo Cassimiro
 * **Node:** v22.x
 * **Repo (seu fork):** https://github.com/lcrodolfo/puc-iec-testes-aplicacoes-mobile/tree/main/exercicios/02-suite-jest-rntl
-* **Commit/PR de entrega:** [inserir URL do commit ou PR]
+* **Commit/PR de entrega:** https://github.com/jacksonsmith/puc-iec-testes-aplicacoes-mobile/pull/41
 
 ---
 
