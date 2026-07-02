@@ -19,6 +19,40 @@ funcionando faz a **Trilha B**.
 Ao reconvergir (depois do plantão), **5min de compartilhar achados** em vez de demo do zero —
 a maioria já fez sozinho.
 
+## 0. Antes de começar
+
+**Onde rodar cada comando:**
+- Comandos `adb shell ...` e `adb install` **rodam de qualquer pasta** — não dependem de estar
+  dentro do repo, só precisam do device/emulador conectado.
+- Comandos que mexem em arquivo do repo (`grep` no manifest, `./gradlew`, `aapt dump` no APK
+  buildado) **precisam estar dentro de `exercicios/03-maestro-e2e/pratica`**, a partir da raiz
+  do repo clonado. Confirma onde você está:
+  ```bash
+  pwd                 # deve terminar em .../exercicios/03-maestro-e2e/pratica
+  ls android           # se der "No such file or directory", você não está no lugar certo
+  ```
+
+**Confirma que o device/emulador está respondendo:**
+```bash
+adb devices
+```
+Esperado:
+```
+List of devices attached
+emulator-5554	device
+```
+(ou o serial do seu celular físico, se for esse o caso).
+
+**Troubleshooting rápido — se travar aqui, resolve antes de seguir:**
+
+| Sintoma | Causa provável | Solução |
+|---|---|---|
+| `adb devices` não lista nada | Emulador não bootou / cabo USB solto / Depuração USB desligada | Reabrir emulador (Android Studio → Device Manager → ▶) ou reconectar cabo + checar *Opções do desenvolvedor* |
+| `adb: command not found` | `platform-tools` não está no PATH | Ver passo 1b do [`COMECE-AQUI.md`](./COMECE-AQUI.md) — precisa exportar `ANDROID_HOME` e reabrir o terminal |
+| `error: more than one device/emulator` | Emulador + celular físico conectados ao mesmo tempo | `adb devices` pra ver os IDs, usar `adb -s <id> shell ...` em cada comando, ou desconectar um dos dois |
+| Comando `adb shell` trava sem responder | Servidor adb travado | `adb kill-server && adb start-server`, tentar de novo |
+| `aapt: command not found` | `aapt` não está no PATH (só `adb`/`emulator` costumam estar) | Usar caminho completo: `$ANDROID_HOME/build-tools/<versão>/aapt` — confira a versão instalada com `ls $ANDROID_HOME/build-tools` |
+
 ## 1. Performance — cold start e jank (Trilha A)
 
 > **Por que importa:** esses milissegundos decidem se o usuário espera ou fecha o app antes de
@@ -29,16 +63,59 @@ adb shell am force-stop com.puciec.cinefav
 adb shell am start -W com.puciec.cinefav/.MainActivity
 ```
 
-Olhar a linha **`TotalTime`** (ms). Rodar 3x, comparar variação. Depois rodar **sem** o
-`force-stop` antes (warm start) e comparar — mesma app, número bem menor.
+**Resultado real** (capturado agora, emulador Pixel/API 35 — o seu vai variar):
+```
+Status: ok
+LaunchState: COLD
+Activity: com.puciec.cinefav/.MainActivity
+TotalTime: 1935
+WaitTime: 1942
+Complete
+```
+
+**Como ler:** `TotalTime` (ms) é o número que importa — do toque no ícone até a primeira tela
+desenhada. `LaunchState: COLD` confirma que foi partida fria (processo não existia). Rodamos 3x
+seguidas aqui e variou **1935 → 2612 → 3521ms** — variação de quase 2x entre execuções é normal
+em emulador (recursos da máquina host competindo); em device físico costuma ser mais estável.
+
+**Pra warm/hot start, ⚠️ não é só "rodar sem o `force-stop`"** — se o app ainda está em primeiro
+plano, o Android só reenvia o intent pro app já aberto e o comando devolve `TotalTime: 0` (não
+mede nada, é ruído). Pra medir warm/hot start de verdade, manda o app pra **background** primeiro:
+```bash
+adb shell input keyevent KEYCODE_HOME
+adb shell am start -W com.puciec.cinefav/.MainActivity
+```
+**Resultado real:**
+```
+LaunchState: HOT
+TotalTime: 280
+```
+`280ms` vs `~1935-3521ms` de cold start — diferença de mais de 6x, e é exatamente por isso que
+apps guardam processo em memória: reabrir é muito mais barato que iniciar do zero.
 
 ```bash
 adb shell dumpsys gfxinfo com.puciec.cinefav
 ```
 
-Rolar a lista de filmes no device **antes** de rodar o comando (ele mede o histórico recente).
-Olhar `Janky frames` (% de frames que estouraram 16ms/60fps). Comparar com colega — variação
-normal entre emulador/device físico.
+Rolar a lista de filmes no device **antes** de rodar o comando (ele mede o histórico recente):
+```bash
+adb shell input swipe 500 1800 500 400 200   # simula 1 scroll rápido, se não quiser rolar na mão
+```
+
+**Resultado real** (mesmo emulador, 5 scrolls simulados):
+```
+Total frames rendered: 67
+Janky frames: 66 (98.51%)
+50th percentile: 81ms
+90th percentile: 150ms
+```
+
+**Como ler:** `Janky frames` é a % de frames que passaram de 16ms (o orçamento pra manter 60fps).
+**98.51% aqui é um número de emulador sem aceleração de GPU real — não é o app que está ruim,
+é o ambiente.** Isso não é desculpa genérica: rodamos e o número realmente veio assim. Comparem
+com colega que estiver em device físico — a diferença costuma ser grande (device físico geralmente
+fica bem abaixo de 20-30%). O valor do exercício é comparar **o mesmo app em ambientes diferentes**,
+não validar se 98% é "bom" ou "ruim" em isolado — em emulador, quase todo app vai jankar bastante.
 
 **Por que não tem "fix" nessa seção:** olhamos o código do CineFav — é app limpo, sem gargalo
 plantado. Nem todo achado de QA tem correção de 1 linha; às vezes o valor é registrar o **baseline**
@@ -56,7 +133,15 @@ cd exercicios/03-maestro-e2e/pratica
 cat android/app/src/main/AndroidManifest.xml | grep -E "allowBackup|EXTERNAL_STORAGE|SYSTEM_ALERT"
 ```
 
-Dois achados **reais** (não plantados — são o app de verdade):
+**Resultado real** (é o app de verdade, roda exatamente assim):
+```
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<application ... android:allowBackup="true" ...>
+```
+
+Dois achados **reais** (não plantados):
 
 1. **`android:allowBackup="true"`** — permite extrair dados do app via `adb backup` sem root
    (OWASP Mobile M9/M2 — Insecure Data Storage). Ligado ao MASVS-STORAGE.
@@ -81,12 +166,23 @@ ajuste o caminho abaixo pra onde salvaram o arquivo, ex. `~/Downloads/CineFav.ap
 provar o achado **no binário de verdade, real, distribuído** — sem SDK de projeto, sem
 `npm install`, sem device:
 ```bash
-aapt dump xmltree CineFav.apk AndroidManifest.xml | grep -i backup
+$ANDROID_HOME/build-tools/<sua-versão>/aapt dump xmltree CineFav.apk AndroidManifest.xml | grep -i -A1 backup
 ```
-`aapt` vem com o Android SDK build-tools (mesmo pacote do emulador, já instalado). Isso mostra que
-o achado não é só teoria de código-fonte — está no binário que qualquer pessoa baixaria. Fixar e
-reverificar em build novo fica pra quando tiver device (Trilha A) — builda sem poder instalar não
-prova nada.
+
+**Resultado real:**
+```
+A: android:allowBackup(0x01010280)=(type 0x12)0xffffffff
+```
+
+**Como ler — isso não é bug, é formato binário:** o manifest compilado dentro do APK não guarda
+texto `"true"`/`"false"`, guarda um inteiro. **`0xffffffff` = `true`** (todos os bits ligados);
+**`0x00000000` = `false`**. Se depois do fix vocês rodarem o mesmo comando e virem `0x00000000`,
+o fix pegou no binário de verdade, não só no código-fonte.
+
+`aapt` vem com o Android SDK build-tools (mesmo pacote do emulador, já instalado — ver
+troubleshooting na seção 0 se `aapt` não estiver no PATH). Isso mostra que o achado não é só
+teoria de código-fonte — está no binário que qualquer pessoa baixaria. Fixar e reverificar em
+build novo fica pra quando tiver device (Trilha A) — builda sem poder instalar não prova nada.
 
 ### Trilha A — rebuild, reinstalar, reverificar
 
@@ -104,10 +200,11 @@ prova nada.
 cd android && ./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 cat app/src/main/AndroidManifest.xml | grep allowBackup   # confirma na fonte
-aapt dump xmltree app/build/outputs/apk/debug/app-debug.apk AndroidManifest.xml | grep -i backup
+$ANDROID_HOME/build-tools/<sua-versão>/aapt dump xmltree app/build/outputs/apk/debug/app-debug.apk AndroidManifest.xml | grep -i -A1 backup
 ```
-O `aapt dump` no APK **recém-buildado** prova que o fix foi pro binário, não só a fonte — mesmo
-comando da Trilha B, mas comparando antes (CineFav.apk original) vs depois (app-debug.apk com fix).
+Depois do fix, o `aapt dump` deve mostrar `0x00000000` (era `0xffffffff` antes — ver seção
+"Como ler" acima) — prova que o fix foi pro binário **recém-buildado**, não só a fonte. Comparem
+com o resultado da Trilha B (`CineFav.apk` original) pra ver a diferença antes/depois lado a lado.
 
 ## Por que isso substitui a "Aula 5" original
 
