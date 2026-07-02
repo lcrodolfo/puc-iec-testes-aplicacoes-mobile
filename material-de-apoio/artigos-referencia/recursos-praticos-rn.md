@@ -28,10 +28,11 @@ trabalho final. Curado, não é lista bruta de busca — só o que é específic
 
 ## 🧠 IA aplicada a testes
 
-**Tema 5 — Visual AI**
-- [Screenshot Testing Storybook for React Native with Applitools](https://medium.com/@gytis.vinclovas/screenshot-testing-storybook-for-react-native-with-applitools-47ce2e4ad0d2) (Medium — o mais RN-specific que existe)
-- [wix-incubator/rnsst — React Native Storybook Screenshot Tests with Applitools](https://github.com/wix-incubator/rnsst) (repo real, Wix)
-- Nota: cobertura RN de Applitools é limitada — a maioria do material deles é React web, avisar o grupo que vai adaptar.
+**Tema 5 — Visual Regression Testing** *(era Visual AI/Applitools — trocado 03/07, ver enunciado)*
+- [Introducing Visual Testing in Maestro](https://maestro.dev/blog/visual-testing) (**caminho principal** — mesma ferramenta que já usam, sem SaaS pago)
+- [React Native Owl — FormidableLabs](https://github.com/FormidableLabs/react-native-owl) (open source, feito específico pra RN iOS+Android)
+- [Screenshot Testing Storybook for React Native with Applitools](https://medium.com/@gytis.vinclovas/screenshot-testing-storybook-for-react-native-with-applitools-47ce2e4ad0d2) (referência, caminho pago se quiserem comparar)
+- Nota: cobertura RN de Applitools é limitada — maioria do material deles é React web, por isso a troca.
 
 **Tema 6 — Test Generation com LLM**
 - [Maestro MCP + Claude: AI-Powered Mobile UI Test Automation](https://verygood.ventures/blog/maestro-mcp-claude-mobile-ui-test-automation/) (Very Good Ventures — RN shop conhecida)
@@ -39,17 +40,20 @@ trabalho final. Curado, não é lista bruta de busca — só o que é específic
 - [Stop Manual Testing! How Claude Code + Maestro MCP Disrupt App Dev](https://medium.com/@tentenco/stop-manual-testing-how-claude-code-maestro-mcp-disrupt-app-dev-dfd1a2d6425c)
 - Nota: MCP (Model Context Protocol) é a peça nova aqui — vale explicar antes do grupo usar.
 
-**Tema 7 — AI Agent Exploratory**
-- Sem achado RN-specific — AppAgent/DroidBot são Android puro (leem árvore de view nativa, não
-  componente RN). Grupo vai precisar tratar o app como caixa-preta Android normal aqui — **isso é
-  esperado, não é lacuna do material**, é a natureza da ferramenta.
+**Tema 7 — AI Agent Exploratory** *(stack trocada de AppAgent/DroidBot — ver enunciado)*
+- [Maestro MCP | Agentic UI Testing for Mobile Apps](https://maestro.dev/mcp) (**caminho principal** — servidor oficial, lançado fev/2026)
+- [docs.maestro.dev/get-started/maestro-mcp](https://docs.maestro.dev/get-started/maestro-mcp) (setup oficial)
+- [Stop Manual Testing! How Claude Code + Maestro MCP Disrupt App Dev](https://medium.com/@tentenco/stop-manual-testing-how-claude-code-maestro-mcp-disrupt-app-dev-dfd1a2d6425c)
+- AppAgent/DroidBot viram bônus opcional (código de pesquisa acadêmica, Android puro, setup historicamente frágil — esperado ter fricção, não é lacuna do material).
 
 ## ⚡ Performance & Segurança
 
-**Tema 3 — Performance**
-- [React Native Performance tactics: Modern strategies and tools](https://blog.sentry.io/react-native-performance-strategies-tools/) (Sentry Blog — empresa real, ferramenta real)
-- [Performance Overview — React Native docs](https://reactnative.dev/docs/performance) (oficial)
-- [Improve Your React Native App Performance With a Few Tricks](https://www.callstack.com/ebooks/the-ultimate-guide-to-react-native-optimization) (Callstack — consultoria RN de referência no mercado)
+**Tema 3 — Performance** *(stack trocada de Macrobenchmark — ver enunciado)*
+- [Flashlight — GitHub (BAM)](https://github.com/bamlab/flashlight) (**caminho principal** — open source, "Lighthouse pra mobile", roda via ADB sem módulo Gradle)
+- [How to measure React Native performance with Flashlight](https://www.theodo.com/blog/measuring-react-native-performance-with-flashlight) (Theodo)
+- [Reassure — Callstack](https://github.com/callstack/reassure) (regressão de performance de render, integra com Jest/RNTL)
+- [Performance Regression Testing for React Native](https://www.callstack.com/blog/performance-regression-testing-react-native) (Callstack blog)
+- [React Native Performance tactics: Modern strategies and tools](https://blog.sentry.io/react-native-performance-strategies-tools/) (Sentry Blog — contexto geral)
 - Dado real: New Architecture + Hermes corta cold start em ~40% (fonte: agregado de migrações 2025-2026)
 
 **Tema 4 — Security**
